@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Flexi Fault Finder</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #e8002d;
+  --red-dim: #a0001f;
+  --red-glow: rgba(232,0,45,0.35);
+  --red-subtle: rgba(232,0,45,0.08);
+  --bg: #0a0a0a;
+  --bg-card: #111111;
+  --bg-elevated: #181818;
+  --border: #2a2a2a;
+  --border-bright: #3a3a3a;
+  --text: #f0f0f0;
+  --text-muted: #888;
+  --text-dim: #555;
+  --mono: 'Share Tech Mono', monospace;
+  --display: 'Barlow Condensed', sans-serif;
+  --ui: 'Rajdhani', sans-serif;
+  --green: #00c853;
+  --green-subtle: rgba(0,200,83,0.08);
+  --green-dim: #007a32;
+  --amber: #ff9800;
+  --amber-subtle: rgba(255,152,0,0.08);
+  --amber-dim: #b36a00;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);min-height:100vh;overflow-x:hidden;}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,0,45,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,0,45,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+
+/* ── CONTAINER ── */
+.container{position:relative;z-index:1;max-width:1100px;margin:0 auto;padding:32px 20px 60px;}
+
+/* ── HEADER ── */
+.header{text-align:center;padding:40px 0 36px;border-bottom:1px solid var(--border);margin-bottom:36px;position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent);}
+.header-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--red);text-transform:uppercase;margin-bottom:10px;}
+.header h1{font-family:var(--display);font-size:clamp(36px,6vw,62px);font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--text);line-height:1;}
+.header h1 span{color:var(--red);}
+.header-sub{margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:0.15em;color:var(--text-muted);}
+
+/* ── ENGINEER BAR ── */
+.engineer-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);padding:12px 20px;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
+.engineer-info{display:flex;align-items:center;gap:12px;}
+.engineer-dot{width:8px;height:8px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;}
+.engineer-name{font-family:var(--mono);font-size:12px;color:var(--text);letter-spacing:0.1em;}
+.engineer-role{font-family:var(--mono);font-size:10px;color:var(--text-muted);letter-spacing:0.1em;text-transform:uppercase;}
+.cart-summary{display:flex;align-items:center;gap:16px;}
+.cart-count{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:0.1em;}
+.btn-view-cart{background:var(--bg-elevated);border:1px solid var(--border-bright);color:var(--text-muted);font-family:var(--mono);font-size:11px;letter-spacing:0.1em;padding:6px 14px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;}
+.btn-view-cart:hover{border-color:var(--amber);color:var(--amber);}
+.btn-submit-order{background:var(--red);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:8px 20px;cursor:pointer;transition:background 0.15s;}
+.btn-submit-order:hover{background:#b5001f;}
+.btn-submit-order:disabled{background:var(--border);color:var(--text-dim);cursor:not-allowed;}
+
+/* ── CONTROLLER SELECTOR ── */
+.controller-select{margin-bottom:28px;}
+.controller-label{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--text-dim);text-transform:uppercase;margin-bottom:12px;}
+.controller-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
+@media(max-width:600px){.controller-grid{grid-template-columns:repeat(2,1fr);}}
+.controller-btn{background:var(--bg-card);border:1px solid var(--border);padding:16px 12px;cursor:pointer;transition:all 0.2s;text-align:center;position:relative;overflow:hidden;}
+.controller-btn::before{content:'';position:absolute;inset:0;background:var(--red);opacity:0;transition:opacity 0.2s;}
+.controller-btn:hover{border-color:var(--red-dim);}
+.controller-btn:hover::before{opacity:0.05;}
+.controller-btn.active{border-color:var(--red);background:var(--red-subtle);}
+.controller-btn.active .ctrl-name{color:var(--red);}
+.ctrl-badge{font-family:var(--mono);font-size:9px;letter-spacing:0.2em;color:var(--text-dim);text-transform:uppercase;margin-bottom:6px;}
+.ctrl-name{font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--text);transition:color 0.2s;}
+.ctrl-desc{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:0.1em;margin-top:4px;text-transform:uppercase;}
+
+/* ── JOB DETAILS ── */
+.job-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px;}
+@media(max-width:640px){.job-bar{grid-template-columns:1fr;}}
+.job-field{background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;overflow:hidden;}
+.job-field-label{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--red);background:var(--red-subtle);border-right:1px solid var(--border);padding:0 12px;height:100%;display:flex;align-items:center;white-space:nowrap;text-transform:uppercase;min-height:44px;}
+.job-field input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;letter-spacing:0.05em;}
+.job-field input::placeholder{color:var(--text-dim);}
+
+/* ── SEARCH ── */
+.search-bar{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border-bright);background:var(--bg-card);overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
+.search-bar:focus-within{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 20px var(--red-glow);}
+.search-prefix{padding:0 14px;background:var(--red);color:#fff;font-family:var(--mono);font-size:13px;letter-spacing:0.1em;display:flex;align-items:center;white-space:nowrap;}
+#searchInput{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:15px;letter-spacing:0.1em;padding:14px 16px;}
+#searchInput::placeholder{color:var(--text-dim);}
+.search-btn{background:var(--bg-elevated);border:none;border-left:1px solid var(--border-bright);color:var(--text-muted);font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:0 24px;cursor:pointer;transition:background 0.15s,color 0.15s;}
+.search-btn:hover{background:var(--red);color:#fff;}
+
+/* ── FAULT GRID ── */
+.codes-panel{background:var(--bg-card);border:1px solid var(--border);margin-bottom:32px;}
+.codes-panel-header{padding:10px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;}
+.codes-panel-header span{font-family:var(--mono);font-size:10px;letter-spacing:0.25em;color:var(--text-dim);text-transform:uppercase;}
+.codes-panel-header::before{content:'';display:block;width:8px;height:8px;background:var(--red);clip-path:polygon(50% 0%,100% 50%,50% 100%,0% 50%);}
+.fault-grid{display:flex;flex-wrap:wrap;gap:6px;padding:16px;}
+.fault-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text-muted);font-family:var(--mono);font-size:12px;letter-spacing:0.08em;padding:6px 12px;cursor:pointer;transition:all 0.15s;text-transform:uppercase;position:relative;}
+.fault-btn:hover{background:var(--red-subtle);border-color:var(--red);color:var(--red);box-shadow:0 0 8px var(--red-glow);}
+.fault-btn.active{background:var(--red);border-color:var(--red);color:#fff;}
+.fault-btn .sev-dot{position:absolute;top:3px;right:3px;width:5px;height:5px;border-radius:50%;}
+.fault-btn .sev-dot.red{background:var(--red);}
+.fault-btn .sev-dot.amber{background:var(--amber);}
+.fault-btn .sev-dot.green{background:var(--green);}
+
+/* ── RESULT CARD ── */
+.result-card{background:var(--bg-card);border:1px solid var(--border);animation:slideIn 0.2s ease-out;overflow:hidden;}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.result-card.sev-red{border-left:3px solid var(--red);}
+.result-card.sev-amber{border-left:3px solid var(--amber);}
+.result-card.sev-green{border-left:3px solid var(--green);}
+.result-header{padding:20px 24px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;flex-wrap:wrap;}
+.result-code{font-family:var(--mono);font-size:13px;color:var(--red);letter-spacing:0.15em;background:var(--red-subtle);border:1px solid var(--red-dim);padding:4px 10px;}
+.result-name{font-family:var(--display);font-size:26px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;color:var(--text);flex:1;}
+.sev-badge{display:flex;align-items:center;gap:8px;padding:6px 14px;border:1px solid;font-family:var(--mono);font-size:11px;letter-spacing:0.15em;text-transform:uppercase;white-space:nowrap;}
+.sev-badge .sev-indicator{width:10px;height:10px;border-radius:50%;animation:pulse 2s infinite;}
+.sev-badge.red{color:var(--red);border-color:var(--red-dim);background:var(--red-subtle);}
+.sev-badge.red .sev-indicator{background:var(--red);}
+.sev-badge.amber{color:var(--amber);border-color:var(--amber-dim);background:var(--amber-subtle);}
+.sev-badge.amber .sev-indicator{background:var(--amber);}
+.sev-badge.green{color:var(--green);border-color:var(--green-dim);background:var(--green-subtle);}
+.sev-badge.green .sev-indicator{background:var(--green);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+.result-top{display:grid;grid-template-columns:1fr 1fr;gap:0;border-bottom:1px solid var(--border);}
+@media(max-width:640px){.result-top{grid-template-columns:1fr;}}
+.result-section{padding:20px 24px;}
+.result-section.border-right{border-right:1px solid var(--border);}
+@media(max-width:640px){.result-section.border-right{border-right:none;border-bottom:1px solid var(--border);}}
+.section-label{font-family:var(--mono);font-size:10px;letter-spacing:0.3em;color:var(--red);text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+.section-label::before{content:'';display:block;width:12px;height:1px;background:var(--red);}
+.section-label.amber-label{color:var(--amber);}
+.section-label.amber-label::before{background:var(--amber);}
+.section-label.green-label{color:var(--green);}
+.section-label.green-label::before{background:var(--green);}
+.cause-text{font-size:14px;line-height:1.65;color:#bbb;font-weight:400;}
+.steps-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
+.steps-list li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.5;color:#ccc;}
+.step-num{font-family:var(--mono);font-size:11px;color:var(--red);background:var(--red-subtle);border:1px solid var(--red-dim);min-width:24px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
+.related-section{padding:16px 24px;border-bottom:1px solid var(--border);}
+.related-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.related-chip{background:var(--bg-elevated);border:1px solid var(--border-bright);color:var(--text-muted);font-family:var(--mono);font-size:11px;padding:5px 12px;cursor:pointer;transition:all 0.15s;letter-spacing:0.08em;}
+.related-chip:hover{border-color:var(--amber);color:var(--amber);background:var(--amber-subtle);}
+
+/* ── PARTS ── */
+.parts-section{padding:20px 24px;}
+.parts-grid{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.part-row{display:flex;align-items:center;gap:12px;background:var(--bg-elevated);border:1px solid var(--border);padding:12px 16px;transition:border-color 0.15s;}
+.part-row:hover{border-color:var(--border-bright);}
+.part-confidence{font-family:var(--mono);font-size:10px;padding:3px 8px;border:1px solid;letter-spacing:0.1em;white-space:nowrap;}
+.part-confidence.high{color:var(--green);border-color:var(--green-dim);background:var(--green-subtle);}
+.part-confidence.medium{color:var(--amber);border-color:var(--amber-dim);background:var(--amber-subtle);}
+.part-confidence.low{color:var(--text-muted);border-color:var(--border-bright);}
+.part-info{flex:1;}
+.part-name{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:0.05em;color:var(--text);}
+.part-number{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:0.1em;margin-top:2px;}
+.part-reason{font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--ui);}
+.part-add-btn{background:var(--red);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:8px 18px;cursor:pointer;transition:background 0.15s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.part-add-btn:hover{background:#b5001f;}
+.part-add-btn.added{background:var(--green-dim);cursor:default;}
+.part-add-btn svg{width:14px;height:14px;fill:currentColor;}
+
+/* ── CART DRAWER ── */
+.cart-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:none;animation:fadeIn 0.2s ease;}
+.cart-overlay.open{display:block;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.cart-drawer{position:fixed;right:0;top:0;bottom:0;width:420px;max-width:100vw;background:var(--bg-card);border-left:1px solid var(--border);z-index:101;display:flex;flex-direction:column;animation:slideRight 0.25s ease-out;}
+@keyframes slideRight{from{transform:translateX(100%);}to{transform:translateX(0);}}
+.cart-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
+.cart-title{font-family:var(--display);font-size:22px;font-weight:700;letter-spacing:0.05em;text-transform:uppercase;}
+.cart-close{background:none;border:none;color:var(--text-muted);font-size:20px;cursor:pointer;padding:4px 8px;transition:color 0.15s;}
+.cart-close:hover{color:var(--text);}
+.cart-body{flex:1;overflow-y:auto;padding:16px 24px;}
+.cart-empty{text-align:center;padding:48px 0;font-family:var(--mono);font-size:12px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;}
+.cart-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border);}
+.cart-item-info{flex:1;}
+.cart-item-name{font-family:var(--display);font-size:15px;font-weight:600;color:var(--text);}
+.cart-item-no{font-family:var(--mono);font-size:10px;color:var(--red);letter-spacing:0.1em;margin-top:2px;}
+.cart-item-fault{font-family:var(--mono);font-size:10px;color:var(--text-dim);letter-spacing:0.08em;margin-top:2px;}
+.cart-item-qty{display:flex;align-items:center;gap:8px;}
+.qty-btn{background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);width:24px;height:24px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:14px;transition:all 0.15s;}
+.qty-btn:hover{border-color:var(--red);color:var(--red);}
+.qty-val{font-family:var(--mono);font-size:13px;color:var(--text);min-width:20px;text-align:center;}
+.cart-item-remove{background:none;border:none;color:var(--text-dim);cursor:pointer;font-size:16px;padding:2px 6px;transition:color 0.15s;}
+.cart-item-remove:hover{color:var(--red);}
+.cart-footer{padding:20px 24px;border-top:1px solid var(--border);}
+.cart-footer-info{font-family:var(--mono);font-size:11px;color:var(--text-muted);letter-spacing:0.08em;margin-bottom:12px;}
+.cart-comments{width:100%;background:var(--bg-elevated);border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:12px;padding:10px 14px;outline:none;resize:none;margin-bottom:12px;letter-spacing:0.05em;}
+.cart-comments:focus{border-color:var(--red);}
+.cart-comments::placeholder{color:var(--text-dim);}
+.btn-place-order{width:100%;background:var(--red);border:none;color:#fff;font-family:var(--display);font-size:16px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:16px;cursor:pointer;transition:background 0.15s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.btn-place-order:hover{background:#b5001f;}
+.btn-place-order:disabled{background:var(--border);color:var(--text-dim);cursor:not-allowed;}
+.btn-place-order.loading{opacity:0.7;pointer-events:none;}
+
+/* ── MISC ── */
+.not-found{text-align:center;padding:48px 24px;background:var(--bg-card);border:1px solid var(--border);animation:slideIn 0.2s ease-out;}
+.not-found-code{font-family:var(--mono);font-size:36px;color:var(--text-dim);margin-bottom:12px;}
+.not-found p{font-size:14px;color:var(--text-muted);letter-spacing:0.05em;}
+.no-controller{text-align:center;padding:48px 24px;background:var(--bg-card);border:1px solid var(--border);font-family:var(--mono);font-size:12px;color:var(--text-dim);letter-spacing:0.1em;text-transform:uppercase;}
+.footer{text-align:center;margin-top:48px;padding-top:24px;border-top:1px solid var(--border);font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--text-dim);text-transform:uppercase;}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;border:1px solid var(--green-dim);color:var(--green);font-family:var(--mono);font-size:12px;letter-spacing:0.1em;padding:12px 20px;z-index:9999;animation:toastIn 0.3s ease-out;display:flex;align-items:center;gap:10px;}
+.toast.error{border-color:var(--red-dim);color:var(--red);}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+.order-success{background:var(--green-subtle);border:1px solid var(--green-dim);padding:20px 24px;margin-bottom:24px;display:flex;align-items:center;gap:16px;animation:slideIn 0.3s ease-out;}
+.order-success-icon{font-size:24px;}
+.order-success-text{font-family:var(--mono);font-size:12px;color:var(--green);letter-spacing:0.1em;}
+.order-success-num{font-family:var(--display);font-size:18px;font-weight:700;color:var(--green);letter-spacing:0.1em;}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-eyebrow">Diagnostic Tool &nbsp;/&nbsp; Flexi Portal</div>
+    <h1>Flexi <span>Fault</span> Finder</h1>
+    <div class="header-sub">Narrow Aisle Ltd &nbsp;·&nbsp; All Controllers &nbsp;·&nbsp; Integrated Parts Ordering</div>
+  </div>
+
+  <!-- ENGINEER BAR -->
+  <div class="engineer-bar">
+    <div class="engineer-info">
+      <div class="engineer-dot"></div>
+      <div>
+        <div class="engineer-name" id="engineerName">Not logged in</div>
+        <div class="engineer-role" id="engineerRole">—</div>
+      </div>
+    </div>
+    <div class="cart-summary">
+      <span class="cart-count" id="cartCount">0 parts in order</span>
+      <button class="btn-view-cart" onclick="openCart()">View Order</button>
+      <button class="btn-submit-order" id="btnSubmitTop" onclick="openCart()" disabled>Submit Order</button>
+    </div>
+  </div>
+
+  <!-- ORDER SUCCESS BANNER -->
+  <div id="orderSuccess" style="display:none;"></div>
+
+  <!-- CONTROLLER SELECTOR -->
+  <div class="controller-select">
+    <div class="controller-label">Select Controller Type</div>
+    <div class="controller-grid">
+      <button class="controller-btn" onclick="selectController('AC3')" id="ctrl-AC3">
+        <div class="ctrl-badge">Controller</div>
+        <div class="ctrl-name">AC3</div>
+        <div class="ctrl-desc">MDI · ZAPI ACE3</div>
+      </button>
+      <button class="controller-btn" onclick="selectController('GEN1')" id="ctrl-GEN1">
+        <div class="ctrl-badge">Controller</div>
+        <div class="ctrl-name">ACE GEN1</div>
+        <div class="ctrl-desc">First Generation</div>
+      </button>
+      <button class="controller-btn" onclick="selectController('GEN2')" id="ctrl-GEN2">
+        <div class="ctrl-badge">Controller</div>
+        <div class="ctrl-name">ACE GEN2</div>
+        <div class="ctrl-desc">Second Generation</div>
+      </button>
+      <button class="controller-btn" onclick="selectController('H2B')" id="ctrl-H2B">
+        <div class="ctrl-badge">Controller</div>
+        <div class="ctrl-name">H2B</div>
+        <div class="ctrl-desc">H2B Series</div>
+      </button>
+    </div>
+  </div>
+
+  <!-- JOB DETAILS -->
+  <div class="job-bar">
+    <div class="job-field">
+      <div class="job-field-label">Works Order</div>
+      <input type="text" id="worksOrder" placeholder="e.g. 142760">
+    </div>
+    <div class="job-field">
+      <div class="job-field-label">Machine Serial</div>
+      <input type="text" id="machineSerial" placeholder="e.g. 199538">
+    </div>
+    <div class="job-field">
+      <div class="job-field-label">Model</div>
+      <input type="text" id="modelRef" placeholder="e.g. 20S/1200">
+    </div>
+  </div>
+
+  <!-- SEARCH -->
+  <div class="search-bar">
+    <div class="search-prefix">CODE ›</div>
+    <input type="text" id="searchInput" placeholder="Enter fault code — e.g. AL8 or 8" autocomplete="off" spellcheck="false">
+    <button class="search-btn" onclick="searchFault()">Search</button>
+  </div>
+
+  <!-- FAULT GRID -->
+  <div class="codes-panel">
+    <div class="codes-panel-header"><span id="gridLabel">Select a controller to view fault codes</span></div>
+    <div class="fault-grid" id="faultGrid"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div id="resultBox"></div>
+
+  <div class="footer">Flexi Narrow Aisle Ltd &nbsp;·&nbsp; Fault Reference &nbsp;·&nbsp; Internal Use Only</div>
+</div>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay" onclick="closeCart()"></div>
+<div class="cart-drawer" id="cartDrawer" style="display:none;">
+  <div class="cart-header">
+    <div class="cart-title">Parts Order</div>
+    <button class="cart-close" onclick="closeCart()">✕</button>
+  </div>
+  <div class="cart-body" id="cartBody"></div>
+  <div class="cart-footer">
+    <div class="cart-footer-info" id="cartFooterInfo"></div>
+    <textarea class="cart-comments" id="cartComments" rows="3" placeholder="Comments / notes for this order…"></textarea>
+    <button class="btn-place-order" id="btnPlaceOrder" onclick="submitOrder()">
+      <svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+      Place Order
+    </button>
+  </div>
+</div>
+
+<script>
+// ─────────────────────────────────────────────
+// CONFIG
+// ─────────────────────────────────────────────
+var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzyqm5dVvIW8snsuO9WX8WBy3xrIywGyT9-05QQZGX04e48hv5v2wsm6pPnbP8g9Rng/exec';
+
+// ─────────────────────────────────────────────
+// SESSION
+// ─────────────────────────────────────────────
+var currentUser = { name: 'Engineer', username: 'engineer', role: 'User' };
+(function loadSession(){
+  try {
+    var raw = localStorage.getItem('flexiSession');
+    if(raw){
+      var s = JSON.parse(raw);
+      currentUser = { name: s.name || s.username || 'Engineer', username: s.username || '', role: s.role || 'User' };
+    }
+  } catch(e){}
+  document.getElementById('engineerName').textContent = currentUser.name;
+  document.getElementById('engineerRole').textContent = currentUser.role;
+})();
+
+// ─────────────────────────────────────────────
+// FAULT DATA — AC3
+// ─────────────────────────────────────────────
+var faultData = {
+  AC3: {
+    label: 'AC3 MDI — All Fault Codes',
+    faults: {
+      "AL6":  { name:"SERIAL ERROR 1",            severity:"amber", related:["AL67","AL15"],        cause:"Serial communication error.", troubleshooting:["Check serial cable connections","Inspect wiring for damage","Test communication cable for continuity"] },
+      "AL8":  { name:"WATCHDOG",                  severity:"red",   related:["AL17","AL18"],        cause:"The test is made in both standby and running conditions. It is a self diagnosing test within the logic.", troubleshooting:["If this Alarm occurs, replace the logic"] },
+      "AL13": { name:"EEPROM KO",                 severity:"red",   related:["AL8"],                cause:"There is fault in the area of memory in which the Adjustment Parameters are stored. This Alarm disables the truck.", troubleshooting:["Re-cycle the key switch","If the fault remains at key on, replace the logic","If the Alarm disappears, the parameters and settings previously stored will have been replaced by default values"] },
+      "AL15": { name:"WAITING FOR NODE",          severity:"amber", related:["AL67","AL6"],         cause:"One of the other inverters is in alarm condition.", troubleshooting:["Clear alarms on all inverters"] },
+      "AL16": { name:"AUX OUTPUT KO",             severity:"amber", related:["AL79","AL71"],        cause:"The microprocessor checks the driver of K4 hydraulic contactor. If the status of the driver does not correspond to the input signal, this alarm is generated.", troubleshooting:["Check the hydraulic spool micro switch is open with the spool levers in the neutral position"] },
+      "AL17": { name:"LOGIC FAILURE #3",          severity:"red",   related:["AL18","AL19","AL8"],  cause:"Fault in the hardware section of the logic board that monitors the hardware current protection.", troubleshooting:["Replace the logic board"] },
+      "AL18": { name:"LOGIC FAILURE #2",          severity:"red",   related:["AL17","AL19","AL8"],  cause:"Fault in the hardware section of the logic board that monitors the phase's voltage feedback.", troubleshooting:["Replace the logic board"] },
+      "AL19": { name:"LOGIC FAILURE #1",          severity:"red",   related:["AL17","AL18","AL66"], cause:"This Alarm indicates that either an under voltage or an overvoltage has occurred.", troubleshooting:["Check for real voltage issues","Replace the logic board if hardware fault"] },
+      "AL21": { name:"SAFETY KO",                 severity:"red",   related:["AL68","AL71"],        cause:"This alarm is generated when the Safety input is open.", troubleshooting:["Check the safety input connections"] },
+      "AL30": { name:"VMN LOW",                   severity:"red",   related:["AL31","AL53","AL60"], cause:"Possible causes: a) Problem with the motor power connections / cables, b) Motor has a frame fault, c) Failure of the Inverter.", troubleshooting:["Check motor power connections and cables","Check motor for frame faults","If connections OK, replace inverter"] },
+      "AL31": { name:"VMN HIGH",                  severity:"red",   related:["AL30","AL53","AL60"], cause:"Possible causes: a) Problem with the motor power connections / cables, b) Motor has a frame fault, c) Failure of the Inverter.", troubleshooting:["Check motor power connections and cables","Check motor for frame faults","If connections OK, replace inverter"] },
+      "AL37": { name:"CONTACTOR CLOSED",          severity:"red",   related:["AL38","AL74","AL76"], cause:"The logic checks that the Line Contactor contacts are not closed when the coil is not energized.", troubleshooting:["Check that the contacts are not welded and are free to move"] },
+      "AL38": { name:"CONTACTOR OPEN",            severity:"red",   related:["AL37","AL75","AL76"], cause:"This alarm is generated when the line contactor driver has turned on, but the contactor does not close.", troubleshooting:["Check wiring to contactor coil","Check contactor mechanical operation","Replace contactor if faulty"] },
+      "AL49": { name:"I=0 EVER",                  severity:"amber", related:["AL53","AL30"],        cause:"Current reading always zero.", troubleshooting:["Check current sensor connections","Inspect current shunt or sensor","Replace current sensor if faulty"] },
+      "AL53": { name:"STBY I HIGH",               severity:"red",   related:["AL49","AL30","AL31"], cause:"Logic checks that the current is zero in standby. If not, this alarm is generated and the truck disabled.", troubleshooting:["First replace the logic","If the fault remains, replace the Inverter"] },
+      "AL60": { name:"CAPACITOR CHARGE",          severity:"red",   related:["AL37","AL38","AL30"], cause:"If the Capacitor does not reach a pre-determined charge level in a pre-determined time, this Alarm is generated.", troubleshooting:["Check pre-charge resistor","Check for external loads preventing charging","Replace power module if necessary"] },
+      "AL61": { name:"HIGH TEMPERATURE",          severity:"amber", related:["AL65","AL73"],        cause:"The Inverter temperature >75°C. Maximum current is reduced in proportion to the temperature increase.", troubleshooting:["If the alarm is generated when the inverter is cold, check the wiring of the thermal sensor","Thermal sensor failure","Logic failure"] },
+      "AL65": { name:"MOTOR TEMPERATURE",         severity:"amber", related:["AL61","AL73"],        cause:"This alarm is generated if the motor temperature switch has opened, or the analogue signal exceeds the cut-off level.", troubleshooting:["If this occurs when the motor is cold, check the wiring","If all is OK, replace the logic board"] },
+      "AL66": { name:"BATTERY LOW",               severity:"green", related:["AL19","AL93"],        cause:"When the battery is discharged, this alarm is generated.", troubleshooting:["Check battery charge level","Recharge battery"] },
+      "AL67": { name:"CANBUS KO",                 severity:"amber", related:["AL6","AL15"],         cause:"This alarm is generated if the Inverter does not receive any message from the Can Bus line.", troubleshooting:["Check the wiring","If all is OK, replace the logic"] },
+      "AL68": { name:"SAFETY",                    severity:"red",   related:["AL21","AL71"],        cause:"This alarm is generated when the Safety input is open.", troubleshooting:["Check the safety input connections"] },
+      "AL71": { name:"HANDBRAKE",                 severity:"amber", related:["AL21","AL68","AL79"], cause:"The truck does not start because the handbrake switch is open.", troubleshooting:["Check wiring","Check handbrake microswitch","Verify correct operation","Replace logic if necessary"] },
+      "AL73": { name:"THERMIC SENSOR KO",         severity:"amber", related:["AL61","AL65"],        cause:"The range of the inverter's temperature sensor is continually checked. This alarm is generated if it is out of range.", troubleshooting:["Check the connection of the sensor"] },
+      "AL74": { name:"DRIVER SHORTED",            severity:"red",   related:["AL75","AL76","AL37"], cause:"At Key On, the microprocessor checks that the Line Contactor coil driver is not short circuit.", troubleshooting:["Replace the logic"] },
+      "AL75": { name:"CONTACTOR DRIVER",          severity:"red",   related:["AL74","AL76","AL38"], cause:"The logic closes the line contactor and verifies the voltage on the drain of the driver.", troubleshooting:["Check contactor driver circuit","Replace logic if necessary"] },
+      "AL76": { name:"COIL SHORTED",              severity:"red",   related:["AL74","AL75","AL37"], cause:"At Key on, the microprocessor checks the Line (Main) contactor driver.", troubleshooting:["Check for shorts in coil circuit","Replace logic if necessary"] },
+      "AL78": { name:"VACC NOT OK",               severity:"amber", related:["AL86","AL87","AL79"], cause:"The Alarm is generated when the accelerator wiper voltage is >1v of the minimum value.", troubleshooting:["Check potentiometer calibration","Test potentiometer","Replace if defective"] },
+      "AL79": { name:"INCORRECT START",           severity:"amber", related:["AL78","AL80","AL71"], cause:"This Alarm signals an incorrect starting sequence.", troubleshooting:["Check wiring","Check microswitches","Verify proper starting sequence"] },
+      "AL80": { name:"FORW + BACK",               severity:"amber", related:["AL79","AL21"],        cause:"The Alarm is generated when both forward and reverse running requests are made simultaneously.", troubleshooting:["Check wiring for shorts","Test direction microswitches","Replace logic if necessary"] },
+      "AL82": { name:"ENCODER ERROR",             severity:"amber", related:["AL78","AL87","AL86"], cause:"Two consecutive readings of the encoder speed are too different.", troubleshooting:["Check both the electrical and mechanical functions of the encoder","Note that Electro Magnetic Noise on the sensor bearing can also cause this Alarm"] },
+      "AL86": { name:"PEDAL WIRE KO",             severity:"amber", related:["AL87","AL78"],        cause:"This alarm is generated if a fault is detected in the accelerator potentiometer wiring.", troubleshooting:["Check accelerator potentiometer wiring","Test for open circuits"] },
+      "AL87": { name:"PEDAL FAILURE",             severity:"amber", related:["AL86","AL78"],        cause:"This alarm can be activated on request and is generated if the accelerator signal is out of range.", troubleshooting:["Check pedal potentiometer","Replace logic board if necessary"] },
+      "AL93": { name:"INCORRECT BATTERY SETTING", severity:"green", related:["AL66","AL19"],        cause:"Incorrect battery voltage setting.", troubleshooting:["Check battery voltage parameter matches actual battery","Adjust battery setting in parameters"] },
+      "AL94": { name:"DATA ACQUISITION",          severity:"green", related:[],                     cause:"This alarm is generated in the current gain acquisition phase.", troubleshooting:["Wait until the end of the acquisition activity"] },
+      "AL98": { name:"00 RELOAD HM MDI",          severity:"green", related:[],                     cause:"Reload hour meter on MDI.", troubleshooting:["Reload hour meter data to MDI"] },
+      "AL99": { name:"CHECK UP NEEDED",           severity:"green", related:[],                     cause:"This is a Warning Alarm advising the user that the programmed time for maintenance has elapsed.", troubleshooting:["Perform scheduled maintenance","Reset maintenance timer"] }
+    },
+    parts: {
+      "AL6":  [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"CAN/serial communication hub — first check on any comms fault",confidence:"high"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"Wiring harness between MDI and controller",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if cabling checks out",confidence:"medium"} ],
+      "AL8":  [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Watchdog is self-diagnostic — replace logic board if alarm persists",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Inverter hardware fault can trigger watchdog",confidence:"medium"},{partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"MDI comms issue can contribute to watchdog trips",confidence:"low"} ],
+      "AL13": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"EEPROM resides on the logic board",confidence:"high"},{partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"MDI display unit stores parameter data",confidence:"medium"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"Faulty lead can corrupt parameter communication",confidence:"low"} ],
+      "AL15": [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"CAN comms between inverters passes through MDI",confidence:"high"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"Check MDI lead integrity before replacing units",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Faulty inverter node — replace if others clear",confidence:"medium"} ],
+      "AL16": [ {partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Hydraulic spool micro switch — must be open in neutral",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"K4 driver circuit on logic board",confidence:"medium"},{partNo:"42646.04",name:"Lower Solenoid Harness ACE GEN 1/GEN 2",reason:"Wiring harness to hydraulic spool valve",confidence:"medium"} ],
+      "AL17": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Hardware fault in current protection section of logic board",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Replace inverter if logic board replacement does not resolve",confidence:"medium"},{partNo:"55522.06.002",name:"ACE2 Hydraulic Pump Inverter Programmed",reason:"Pump inverter logic section may also be affected",confidence:"low"} ],
+      "AL18": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Phase voltage feedback monitored on logic board",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Phase voltage issue may originate in inverter",confidence:"medium"},{partNo:"41323.82",name:"Traction Motor Cable Set ACE GEN 2",reason:"Damaged phase cables can cause incorrect voltage readings",confidence:"medium"} ],
+      "AL19": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Under/overvoltage detection on logic board",confidence:"high"},{partNo:"41323.62",name:"Battery Harness ACE",reason:"Faulty battery harness can cause voltage fluctuations",confidence:"medium"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Inverter hardware if voltage readings are correct",confidence:"low"} ],
+      "AL21": [ {partNo:"42646.05",name:"E-Stop Switch ACE GEN 1/GEN 2",reason:"Safety circuit passes through E-stop — check first",confidence:"high"},{partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Safety input microswitch may be faulty or misadjusted",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Safety input monitoring on logic board",confidence:"medium"} ],
+      "AL30": [ {partNo:"41323.82",name:"Traction Motor Cable Set ACE GEN 2",reason:"Motor power cables — check for damage or disconnection first",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Inverter failure causes VMN low condition",confidence:"high"},{partNo:"55492.08.000",name:"AC Traction Motor Schabmuller",reason:"Motor frame fault will cause VMN low",confidence:"medium"} ],
+      "AL31": [ {partNo:"41323.82",name:"Traction Motor Cable Set ACE GEN 2",reason:"Motor power cables — check for shorts or frame contact",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Inverter failure causes VMN high condition",confidence:"high"},{partNo:"55492.08.000",name:"AC Traction Motor Schabmuller",reason:"Motor frame fault will cause VMN high",confidence:"medium"} ],
+      "AL37": [ {partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Line contactor contacts may be welded closed",confidence:"high"},{partNo:"55490.02.000",name:"Contactor SW200-1277",reason:"Alternative line contactor — check contacts are free",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Contactor monitoring circuit on logic board",confidence:"low"} ],
+      "AL38": [ {partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Contactor not closing — mechanical or coil failure",confidence:"high"},{partNo:"55490.04.000",name:"Contactor F+R",reason:"Direction contactor may be preventing line contactor closure",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Contactor driver circuit on logic board",confidence:"medium"} ],
+      "AL49": [ {partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Current sensor is internal to the inverter on AC3 series",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Current reading processed by logic — replace if inverter OK",confidence:"medium"},{partNo:"41323.82",name:"Traction Motor Cable Set ACE GEN 2",reason:"Open circuit motor cables can show zero current reading",confidence:"medium"} ],
+      "AL53": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic first as per service guide",confidence:"high"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Replace inverter if logic replacement does not resolve",confidence:"high"},{partNo:"41323.82",name:"Traction Motor Cable Set ACE GEN 2",reason:"Leakage current through damaged cables can trigger standby current alarm",confidence:"low"} ],
+      "AL60": [ {partNo:"55439.05.000",name:"Capacitor 1000µF 63V",reason:"Capacitor not charging to required level — may be faulty",confidence:"high"},{partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Contactor issue can prevent correct pre-charge circuit operation",confidence:"medium"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Pre-charge resistor is internal to the power module",confidence:"medium"} ],
+      "AL61": [ {partNo:"55450.01.000",name:"Temperature Sensor Ref: 491-524",reason:"Inverter thermal sensor — check wiring before replacing",confidence:"high"},{partNo:"55492.08.006",name:"Thermal Sensor Repair Kit",reason:"Sensor repair kit if wiring is intact",confidence:"high"},{partNo:"55131.22.000",name:"48V Fan 60x60x38 AC Controller",reason:"Cooling fan failure causes inverter overtemperature",confidence:"medium"} ],
+      "AL65": [ {partNo:"55492.08.006",name:"Thermal Sensor Repair Kit",reason:"Motor temperature sensor — check wiring, replace if alarm occurs when cold",confidence:"high"},{partNo:"55450.01.000",name:"Temperature Sensor Ref: 491-524",reason:"Alternative sensor if motor sensor wiring checks out",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if sensor and wiring are both confirmed good",confidence:"low"} ],
+      "AL66": [ {partNo:"41323.62",name:"Battery Harness ACE",reason:"Poor battery connection causes false low battery readings",confidence:"high"},{partNo:"55385.22.000",name:"Battery Plug 95505.01 70mm Acid Resistant",reason:"Corroded or damaged battery plug reduces effective voltage",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Battery discharge algorithm runs on logic",confidence:"low"} ],
+      "AL67": [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"CAN bus hub — no messages received likely indicates MDI fault",confidence:"high"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"Check MDI lead continuity before replacing MDI unit",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if MDI and lead are confirmed good",confidence:"medium"} ],
+      "AL68": [ {partNo:"42646.05",name:"E-Stop Switch ACE GEN 1/GEN 2",reason:"Safety input circuit — E-stop is most common cause",confidence:"high"},{partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Safety input microswitch check",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Safety input driver on logic board",confidence:"medium"} ],
+      "AL71": [ {partNo:"7620.02.000",name:"03 Type Ratchet Handbrake",reason:"Handbrake unit — switch may be integral and faulty",confidence:"high"},{partNo:"41302.30",name:"Handbrake Cable Linkage Set",reason:"Cable not fully releasing — keeps switch open",confidence:"high"},{partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Handbrake microswitch may need replacement",confidence:"medium"} ],
+      "AL73": [ {partNo:"55450.01.000",name:"Temperature Sensor Ref: 491-524",reason:"Inverter temperature sensor out of range",confidence:"high"},{partNo:"55492.08.006",name:"Thermal Sensor Repair Kit",reason:"Repair kit for thermal sensor connections",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Sensor range checked by logic — replace if sensor OK",confidence:"low"} ],
+      "AL74": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Driver short circuit detected at key-on — replace logic",confidence:"high"},{partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Shorted driver may have damaged contactor coil",confidence:"medium"},{partNo:"55490.04.000",name:"Contactor F+R",reason:"Check all contactor coils for shorts",confidence:"low"} ],
+      "AL75": [ {partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Contactor driver voltage incorrect — check contactor first",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if contactor is confirmed good",confidence:"high"},{partNo:"55490.04.000",name:"Contactor F+R",reason:"Additional contactor check on driver circuit",confidence:"medium"} ],
+      "AL76": [ {partNo:"55490.08.000",name:"K6 Line Contactor ACE SU280 GEN 1/GEN 2",reason:"Line contactor coil — check for short circuit",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Coil short detected by logic — replace if coil is OK",confidence:"medium"},{partNo:"55490.04.000",name:"Contactor F+R",reason:"Check F+R contactor coil for shorts too",confidence:"low"} ],
+      "AL78": [ {partNo:"55215.03.000",name:"Accelerator Pedal Potentiometer E07008",reason:"Wiper voltage out of range — potentiometer most likely cause",confidence:"high"},{partNo:"55481.01.001",name:"Accelerator Pedal Zappi",reason:"Full pedal assembly if potentiometer alone unavailable",confidence:"medium"},{partNo:"55555.01.000",name:"GEN 2 Accelerator Pedal",reason:"GEN 2 pedal assembly alternative",confidence:"medium"} ],
+      "AL79": [ {partNo:"42646.01",name:"Direction Switch Harness ACE GEN 1/GEN 2",reason:"Incorrect start often caused by direction switch wiring issue",confidence:"high"},{partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Seat or direction microswitch not in correct state at start",confidence:"high"},{partNo:"55215.03.000",name:"Accelerator Pedal Potentiometer E07008",reason:"Accelerator not at zero at start triggers incorrect sequence",confidence:"medium"} ],
+      "AL80": [ {partNo:"42646.01",name:"Direction Switch Harness ACE GEN 1/GEN 2",reason:"Forward and reverse both active — check harness for shorts",confidence:"high"},{partNo:"5729.01.000",name:"Burgess Microswitch",reason:"Direction microswitches may both be stuck or bridged",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if wiring and switches are confirmed good",confidence:"low"} ],
+      "AL82": [ {partNo:"55492.08.001",name:"Encoder Sensor",reason:"Encoder signal corrupted or disconnected — most common cause",confidence:"high"},{partNo:"55492.05.001",name:"Encoder Bearing 80 Pulse",reason:"EMI on sensor bearing can corrupt encoder signal",confidence:"high"},{partNo:"42646.00",name:"Traction Encoder Harness GEN 1/GEN 2",reason:"Encoder harness — check both channels for continuity",confidence:"medium"} ],
+      "AL86": [ {partNo:"55215.03.000",name:"Accelerator Pedal Potentiometer E07008",reason:"Potentiometer wiring fault — open circuit detected",confidence:"high"},{partNo:"55481.01.001",name:"Accelerator Pedal Zappi",reason:"Full pedal assembly if fault is internal to pedal",confidence:"medium"},{partNo:"42646.00",name:"Traction Encoder Harness GEN 1/GEN 2",reason:"Check harness routing near accelerator for chafing",confidence:"low"} ],
+      "AL87": [ {partNo:"55215.03.000",name:"Accelerator Pedal Potentiometer E07008",reason:"Accelerator signal out of range — potentiometer failure",confidence:"high"},{partNo:"55481.01.001",name:"Accelerator Pedal Zappi",reason:"Full pedal assembly replacement",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Replace logic if pedal is confirmed good",confidence:"low"} ],
+      "AL93": [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"Battery voltage parameter set via MDI — check settings first",confidence:"high"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Parameter stored on logic board",confidence:"medium"},{partNo:"41323.62",name:"Battery Harness ACE",reason:"Incorrect voltage reading may be caused by poor battery connection",confidence:"low"} ],
+      "AL94": [ {partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Current gain acquisition runs on logic board",confidence:"medium"},{partNo:"55522.06.001",name:"ACE3 Traction Inverter Programmed",reason:"Traction inverter involved in current acquisition",confidence:"low"},{partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"MDI displays acquisition status",confidence:"low"} ],
+      "AL98": [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"Hour meter data stored and displayed on MDI",confidence:"high"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"Check lead integrity if MDI not communicating",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Hour meter source data held on logic board",confidence:"low"} ],
+      "AL99": [ {partNo:"55481.14.000",name:"Zapi CAN MDI",reason:"Maintenance timer reset performed via MDI",confidence:"high"},{partNo:"55481.14.001",name:"AC3 MDI Lead",reason:"MDI lead required for parameter access",confidence:"medium"},{partNo:"55522.06.000",name:"Zapi ACE Control Panel Complete",reason:"Maintenance interval stored on logic board",confidence:"low"} ]
+    }
+  },
+  GEN1: {
+    label: 'ACE GEN1 — Fault Codes',
+    faults: {},
+    parts: {}
+  },
+  GEN2: {
+    label: 'ACE GEN2 — Fault Codes',
+    faults: {},
+    parts: {}
+  },
+  H2B: {
+    label: 'H2B — Fault Codes',
+    faults: {},
+    parts: {}
+  }
+};
+
+var severityLabels = { red:'PARK IMMEDIATELY', amber:'MONITOR — REDUCE USE', green:'CAN FINISH SHIFT' };
+
+// ─────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────
+var activeController = null;
+var activeBtn = null;
+var cart = []; // { partNo, name, qty, faultCode, faultName }
+
+// ─────────────────────────────────────────────
+// CONTROLLER SELECTION
+// ─────────────────────────────────────────────
+function selectController(ctrl) {
+  activeController = ctrl;
+  ['AC3','GEN1','GEN2','H2B'].forEach(function(c){
+    document.getElementById('ctrl-' + c).classList.toggle('active', c === ctrl);
+  });
+  document.getElementById('resultBox').innerHTML = '';
+  document.getElementById('searchInput').value = '';
+  if(activeBtn){ activeBtn.classList.remove('active'); activeBtn = null; }
+  buildGrid();
+}
+
+function buildGrid() {
+  var grid = document.getElementById('faultGrid');
+  grid.innerHTML = '';
+  if(!activeController){ return; }
+  var data = faultData[activeController];
+  document.getElementById('gridLabel').textContent = data.label;
+  var faults = data.faults;
+  if(!Object.keys(faults).length){
+    grid.innerHTML = '<div style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:0.1em;padding:8px;text-transform:uppercase;">Fault data coming soon — upload manual data to populate</div>';
+    return;
+  }
+  Object.keys(faults).forEach(function(code){
+    var f = faults[code];
+    var btn = document.createElement('button');
+    btn.className = 'fault-btn';
+    btn.setAttribute('data-code', code);
+    btn.innerHTML = code + '<span class="sev-dot ' + f.severity + '"></span>';
+    btn.onclick = function(){ showFault(code, btn); };
+    grid.appendChild(btn);
+  });
+}
+
+// ─────────────────────────────────────────────
+// FAULT DISPLAY
+// ─────────────────────────────────────────────
+function searchFault() {
+  if(!activeController){ showToast('Please select a controller first', true); return; }
+  var input = document.getElementById('searchInput').value.trim().toUpperCase();
+  if(!input) return;
+  var code = input;
+  if(!code.match(/^AL/) && !isNaN(code) && code !== '') code = 'AL' + parseInt(code);
+  var btn = document.querySelector('[data-code="' + code + '"]');
+  showFault(code, btn);
+}
+
+function showFault(code, btn) {
+  if(!activeController){ showToast('Please select a controller first', true); return; }
+  if(activeBtn) activeBtn.classList.remove('active');
+  if(btn){ btn.classList.add('active'); activeBtn = btn; }
+  var resultDiv = document.getElementById('resultBox');
+  var data = faultData[activeController];
+  var fault = data.faults[code];
+  if(!fault){
+    resultDiv.innerHTML = '<div class="not-found"><div class="not-found-code">' + code + '</div><p>Fault code not found in ' + activeController + ' — please check the code and try again</p></div>';
+    return;
+  }
+  var stepsHtml = '';
+  fault.troubleshooting.forEach(function(step, i){
+    stepsHtml += '<li><span class="step-num">' + String(i+1).padStart(2,'0') + '</span><span>' + step + '</span></li>';
+  });
+  var relatedHtml = '';
+  if(fault.related && fault.related.length){
+    var chips = fault.related.map(function(rc){
+      var rf = data.faults[rc];
+      var label = rf ? rc + ' — ' + rf.name : rc;
+      return '<button class="related-chip" onclick="showFaultByCode(\'' + rc + '\')">' + label + '</button>';
+    }).join('');
+    relatedHtml = '<div class="related-section"><div class="section-label amber-label">Also Check — Related Faults</div><div class="related-chips">' + chips + '</div></div>';
+  }
+  var parts = (data.parts && data.parts[code]) ? data.parts[code] : [];
+  var partsHtml = '';
+  if(parts.length){
+    partsHtml = '<div class="parts-grid">';
+    parts.forEach(function(p){
+      var conf = (p.confidence||'medium').toLowerCase();
+      var confLabel = conf === 'high' ? 'HIGH LIKELIHOOD' : conf === 'medium' ? 'POSSIBLE' : 'CHECK ALSO';
+      var inCart = cart.some(function(c){ return c.partNo === p.partNo && c.faultCode === code; });
+      partsHtml += '<div class="part-row">' +
+        '<span class="part-confidence ' + conf + '">' + confLabel + '</span>' +
+        '<div class="part-info">' +
+          '<div class="part-name">' + p.name + '</div>' +
+          '<div class="part-number">' + p.partNo + '</div>' +
+          '<div class="part-reason">' + p.reason + '</div>' +
+        '</div>' +
+        '<button class="part-add-btn' + (inCart?' added':'') + '" id="addbtn-' + escHtml(p.partNo) + '-' + code + '" onclick="addToCart(' + escHtml(JSON.stringify(p)) + ', \'' + code + '\', \'' + escHtml(fault.name) + '\', this)">' +
+          (inCart
+            ? '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg> Added'
+            : '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg> Add to Order') +
+        '</button>' +
+      '</div>';
+    });
+    partsHtml += '</div>';
+  } else {
+    partsHtml = '<p style="font-family:var(--mono);font-size:11px;color:var(--text-dim);letter-spacing:0.1em;padding:8px 0;text-transform:uppercase;">No parts data for this fault code</p>';
+  }
+  resultDiv.innerHTML =
+    '<div class="result-card sev-' + fault.severity + '">' +
+      '<div class="result-header">' +
+        '<span class="result-code">' + code + '</span>' +
+        '<span class="result-name">' + fault.name + '</span>' +
+        '<div class="sev-badge ' + fault.severity + '"><span class="sev-indicator"></span>' + severityLabels[fault.severity] + '</div>' +
+      '</div>' +
+      '<div class="result-top">' +
+        '<div class="result-section border-right"><div class="section-label">Cause</div><p class="cause-text">' + fault.cause + '</p></div>' +
+        '<div class="result-section"><div class="section-label">Troubleshooting Steps</div><ul class="steps-list">' + stepsHtml + '</ul></div>' +
+      '</div>' +
+      relatedHtml +
+      '<div class="parts-section"><div class="section-label green-label">Commonly Associated Parts</div>' + partsHtml + '</div>' +
+    '</div>';
+  resultDiv.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function showFaultByCode(code){
+  var btn = document.querySelector('[data-code="' + code + '"]');
+  showFault(code, btn);
+  document.getElementById('resultBox').scrollIntoView({behavior:'smooth'});
+}
+
+// ─────────────────────────────────────────────
+// CART
+// ─────────────────────────────────────────────
+function addToCart(part, faultCode, faultName, btnEl) {
+  var existing = cart.find(function(c){ return c.partNo === part.partNo && c.faultCode === faultCode; });
+  if(existing){ existing.qty++; }
+  else { cart.push({ partNo: part.partNo, name: part.name, qty: 1, faultCode: faultCode, faultName: faultName }); }
+  if(btnEl){
+    btnEl.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"></path></svg> Added';
+    btnEl.classList.add('added');
+    btnEl.disabled = true;
+  }
+  updateCartUI();
+  showToast(part.name + ' added to order');
+}
+
+function updateCartUI() {
+  var count = cart.reduce(function(s,c){ return s + c.qty; }, 0);
+  document.getElementById('cartCount').textContent = count + (count === 1 ? ' part' : ' parts') + ' in order';
+  document.getElementById('btnSubmitTop').disabled = count === 0;
+  renderCartBody();
+}
+
+function renderCartBody() {
+  var body = document.getElementById('cartBody');
+  var info = document.getElementById('cartFooterInfo');
+  var btn = document.getElementById('btnPlaceOrder');
+  if(!cart.length){
+    body.innerHTML = '<div class="cart-empty">No parts added yet</div>';
+    info.textContent = '';
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = false;
+  var wo = document.getElementById('worksOrder').value || '—';
+  var serial = document.getElementById('machineSerial').value || '—';
+  info.textContent = 'Engineer: ' + currentUser.name + '  ·  Works Order: ' + wo + '  ·  Serial: ' + serial;
+  var html = '';
+  cart.forEach(function(item, idx){
+    html += '<div class="cart-item">' +
+      '<div class="cart-item-info">' +
+        '<div class="cart-item-name">' + item.name + '</div>' +
+        '<div class="cart-item-no">' + item.partNo + '</div>' +
+        '<div class="cart-item-fault">From fault: ' + item.faultCode + ' — ' + item.faultName + '</div>' +
+      '</div>' +
+      '<div class="cart-item-qty">' +
+        '<button class="qty-btn" onclick="changeQty(' + idx + ', -1)">−</button>' +
+        '<span class="qty-val">' + item.qty + '</span>' +
+        '<button class="qty-btn" onclick="changeQty(' + idx + ', 1)">+</button>' +
+      '</div>' +
+      '<button class="cart-item-remove" onclick="removeFromCart(' + idx + ')">✕</button>' +
+    '</div>';
+  });
+  body.innerHTML = html;
+}
+
+function changeQty(idx, delta) {
+  cart[idx].qty = Math.max(1, cart[idx].qty + delta);
+  updateCartUI();
+}
+
+function removeFromCart(idx) {
+  var removed = cart.splice(idx, 1)[0];
+  var btnId = 'addbtn-' + removed.partNo + '-' + removed.faultCode;
+  var btn = document.getElementById(btnId);
+  if(btn){
+    btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"></path></svg> Add to Order';
+    btn.classList.remove('added');
+    btn.disabled = false;
+  }
+  updateCartUI();
+}
+
+function openCart() {
+  renderCartBody();
+  document.getElementById('cartOverlay').classList.add('open');
+  document.getElementById('cartDrawer').style.display = 'flex';
+  document.getElementById('cartDrawer').style.flexDirection = 'column';
+}
+
+function closeCart() {
+  document.getElementById('cartOverlay').classList.remove('open');
+  document.getElementById('cartDrawer').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
+// SUBMIT ORDER
+// ─────────────────────────────────────────────
+function submitOrder() {
+  if(!cart.length) return;
+  var btn = document.getElementById('btnPlaceOrder');
+  btn.classList.add('loading');
+  btn.textContent = 'Submitting…';
+
+  var orderNumber = generateOrderNumber();
+  var parts = cart.map(function(item){
+    return {
+      'Part Number': item.partNo,
+      'Description': item.name,
+      'Supplier Code': '',
+      'System': activeController || '',
+      'Stock Level': '',
+      'qty': item.qty,
+      'faultCode': item.faultCode
+    };
+  });
+
+  var payload = {
+    action: 'submitOrder',
+    orderNumber: orderNumber,
+    serviceController: currentUser.name,
+    worksOrder: document.getElementById('worksOrder').value || '',
+    machineSerial: document.getElementById('machineSerial').value || '',
+    model: document.getElementById('modelRef').value || '',
+    system: activeController || '',
+    parts: parts,
+    comments: document.getElementById('cartComments').value || ''
+  };
+
+  fetch(SCRIPT_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload)
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(data){
+    if(data.success){
+      closeCart();
+      cart = [];
+      updateCartUI();
+      document.getElementById('cartComments').value = '';
+      showOrderSuccess(orderNumber);
+      showToast('Order ' + orderNumber + ' submitted successfully');
+    } else {
+      showToast('Order failed: ' + (data.error || 'Unknown error'), true);
+    }
+  })
+  .catch(function(err){
+    showToast('Connection error — please try again', true);
+    console.error(err);
+  })
+  .finally(function(){
+    btn.classList.remove('loading');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" style="width:18px;height:18px;fill:currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Place Order';
+    btn.disabled = false;
+  });
+}
+
+function generateOrderNumber() {
+  var serial = document.getElementById('machineSerial').value.trim() || Math.floor(Math.random() * 900000 + 100000).toString();
+  return serial + '-' + Math.floor(Math.random() * 900 + 100);
+}
+
+function showOrderSuccess(orderNumber) {
+  var el = document.getElementById('orderSuccess');
+  el.style.display = 'block';
+  el.innerHTML = '<div class="order-success">' +
+    '<div class="order-success-icon">✓</div>' +
+    '<div>' +
+      '<div class="order-success-text">ORDER SUBMITTED SUCCESSFULLY</div>' +
+      '<div class="order-success-num">' + orderNumber + '</div>' +
+      '<div class="order-success-text" style="margin-top:4px;font-size:10px;color:var(--green-dim)">Now visible in the Orders Dashboard</div>' +
+    '</div>' +
+  '</div>';
+  setTimeout(function(){ el.style.display = 'none'; }, 8000);
+}
+
+// ─────────────────────────────────────────────
+// UTILS
+// ─────────────────────────────────────────────
+function showToast(msg, isError) {
+  var existing = document.querySelector('.toast');
+  if(existing) existing.remove();
+  var t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.innerHTML = (isError ? '⚠ ' : '✓ ') + msg;
+  document.body.appendChild(t);
+  setTimeout(function(){ t.remove(); }, 3500);
+}
+
+function escHtml(s) {
+  if(typeof s !== 'string') s = JSON.stringify(s);
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/'/g,'&#39;').replace(/"/g,'&quot;');
+}
+
+document.getElementById('searchInput').addEventListener('keydown', function(e){
+  if(e.key === 'Enter') searchFault();
+});
+</script>
+</body>
+</html>
