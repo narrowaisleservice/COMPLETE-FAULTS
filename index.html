@@ -73,14 +73,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .ctrl-name{font-family:var(--display);font-size:22px;font-weight:800;letter-spacing:0.05em;text-transform:uppercase;color:var(--text);transition:color 0.2s;}
 .ctrl-desc{font-family:var(--mono);font-size:9px;color:var(--text-dim);letter-spacing:0.1em;margin-top:4px;text-transform:uppercase;}
 
-/* ── JOB DETAILS ── */
-.job-bar{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:24px;}
-@media(max-width:640px){.job-bar{grid-template-columns:1fr;}}
-.job-field{background:var(--bg-card);border:1px solid var(--border);display:flex;align-items:center;overflow:hidden;}
-.job-field-label{font-family:var(--mono);font-size:10px;letter-spacing:0.2em;color:var(--red);background:var(--red-subtle);border-right:1px solid var(--border);padding:0 12px;height:100%;display:flex;align-items:center;white-space:nowrap;text-transform:uppercase;min-height:44px;}
-.job-field input{flex:1;background:transparent;border:none;outline:none;color:var(--text);font-family:var(--mono);font-size:13px;padding:10px 14px;letter-spacing:0.05em;}
-.job-field input::placeholder{color:var(--text-dim);}
-
 /* ── SEARCH ── */
 .search-bar{display:flex;gap:0;margin-bottom:28px;border:1px solid var(--border-bright);background:var(--bg-card);overflow:hidden;transition:border-color 0.2s,box-shadow 0.2s;}
 .search-bar:focus-within{border-color:var(--red);box-shadow:0 0 0 1px var(--red),0 0 20px var(--red-glow);}
@@ -261,22 +253,6 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
         <div class="ctrl-name">H2B</div>
         <div class="ctrl-desc">H2B Series</div>
       </button>
-    </div>
-  </div>
-
-  <!-- JOB DETAILS -->
-  <div class="job-bar">
-    <div class="job-field">
-      <div class="job-field-label">Works Order</div>
-      <input type="text" id="worksOrder" placeholder="e.g. 142760">
-    </div>
-    <div class="job-field">
-      <div class="job-field-label">Machine Serial</div>
-      <input type="text" id="machineSerial" placeholder="e.g. 199538">
-    </div>
-    <div class="job-field">
-      <div class="job-field-label">Model</div>
-      <input type="text" id="modelRef" placeholder="e.g. 20S/1200">
     </div>
   </div>
 
@@ -604,9 +580,7 @@ function renderCartBody() {
     return;
   }
   btn.disabled = false;
-  var wo = document.getElementById('worksOrder').value || '—';
-  var serial = document.getElementById('machineSerial').value || '—';
-  info.textContent = 'Engineer: ' + currentUser.name + '  ·  Works Order: ' + wo + '  ·  Serial: ' + serial;
+  info.textContent = 'Engineer: ' + currentUser.name + '  ·  Controller: ' + (activeController || '—');
   var html = '';
   cart.forEach(function(item, idx){
     html += '<div class="cart-item">' +
@@ -681,9 +655,9 @@ function submitOrder() {
     action: 'submitOrder',
     orderNumber: orderNumber,
     serviceController: currentUser.name,
-    worksOrder: document.getElementById('worksOrder').value || '',
-    machineSerial: document.getElementById('machineSerial').value || '',
-    model: document.getElementById('modelRef').value || '',
+    worksOrder: '',
+    machineSerial: '',
+    model: '',
     system: activeController || '',
     parts: parts,
     comments: document.getElementById('cartComments').value || ''
@@ -719,8 +693,7 @@ function submitOrder() {
 }
 
 function generateOrderNumber() {
-  var serial = document.getElementById('machineSerial').value.trim() || Math.floor(Math.random() * 900000 + 100000).toString();
-  return serial + '-' + Math.floor(Math.random() * 900 + 100);
+  return Math.floor(Math.random() * 900000 + 100000).toString() + '-' + Math.floor(Math.random() * 900 + 100);
 }
 
 function showOrderSuccess(orderNumber) {
