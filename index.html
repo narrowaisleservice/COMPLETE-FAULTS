@@ -910,49 +910,76 @@ function buildGrid() {
 // ─────────────────────────────────────────────
 function searchFault() {
   if(!activeController){ showToast('Please select a controller first', true); return; }
-  var input = document.getElementById('searchInput').value.trim().toUpperCase();
-  if(!input) return;
-  var data = faultData[activeController];
-  var faults = data.faults;
+  var raw = document.getElementById('searchInput').value.trim().toUpperCase();
+  if(!raw) return;
+  var faults = faultData[activeController].faults;
+  var found = null;
 
-  // Direct match
-  if(faults[input]){ showFault(input, document.querySelector('[data-code="' + input + '"]')); return; }
-
-  // AC3 format: AL8 or 8 → AL8
+  // ── AC3: accepts AL8, AL08, 8, 08 ──────────────────────────────
   if(activeController === 'AC3'){
-    var code = input;
-    if(!code.match(/^AL/) && !isNaN(code) && code !== '') code = 'AL' + parseInt(code);
-    if(faults[code]){ showFault(code, document.querySelector('[data-code="' + code + '"]')); return; }
-  }
-
-  // GEN1 format: A8, A19 etc or just number
-  if(activeController === 'GEN1'){
-    // Try with A prefix
-    var withA = input.match(/^[A-Z]/) ? input : 'A' + parseInt(input);
-    // Also strip leading zeros
-    var stripped = input.replace(/^([TABCDEFGHIJKLMNOPQRSTUVWXYZa-z])0*(\d+)$/, '$1$2');
-    if(faults[withA]){ showFault(withA, document.querySelector('[data-code="' + withA + '"]')); return; }
-    if(faults[stripped]){ showFault(stripped, document.querySelector('[data-code="' + stripped + '"]')); return; }
-    // Try with T-, P-, S- prefixes
-    ['T-', 'P-', 'S-'].forEach(function(prefix){
-      var tryCode = prefix + (input.match(/^[A-Z]/) ? input : 'A' + parseInt(input));
-      if(faults[tryCode]){ showFault(tryCode, document.querySelector('[data-code="' + tryCode + '"]')); }
-    });
-    return;
-  }
-
-  // H2B format: AL 08 or 8 → AL 08
-  if(activeController === 'H2B'){
-    var num = parseInt(input.replace(/^AL\s*/, ''));
+    var candidates = [raw];
+    // strip AL prefix and re-add cleanly
+    var num = parseInt(raw.replace(/^AL\s*/,''));
     if(!isNaN(num)){
-      var padded = 'AL ' + (num < 10 ? '0' + num : '' + num);
-      if(faults[padded]){ showFault(padded, document.querySelector('[data-code="' + padded + '"]')); return; }
-      var unpadded = 'AL ' + num;
-      if(faults[unpadded]){ showFault(unpadded, document.querySelector('[data-code="' + unpadded + '"]')); return; }
+      candidates.push('AL' + num);
+      candidates.push('AL0' + num);
+    }
+    // bare number
+    if(!isNaN(raw)) candidates.push('AL' + parseInt(raw));
+    for(var i=0;i<candidates.length;i++){
+      if(faults[candidates[i]]){ found = candidates[i]; break; }
     }
   }
 
-  document.getElementById('resultBox').innerHTML = '<div class="not-found"><div class="not-found-code">' + input + '</div><p>Fault code not found in ' + activeController + ' — please check the code and try again</p></div>';
+  // ── H2B: accepts AL 08, AL8, AL08, 8, 08 ──────────────────────
+  else if(activeController === 'H2B'){
+    var candidates = [raw];
+    var num = parseInt(raw.replace(/^AL\s*/,''));
+    if(!isNaN(num)){
+      candidates.push('AL ' + (num < 10 ? '0'+num : ''+num));
+      candidates.push('AL ' + num);
+    }
+    if(!isNaN(raw)){
+      var n = parseInt(raw);
+      candidates.push('AL ' + (n < 10 ? '0'+n : ''+n));
+      candidates.push('AL ' + n);
+    }
+    for(var i=0;i<candidates.length;i++){
+      if(faults[candidates[i]]){ found = candidates[i]; break; }
+    }
+  }
+
+  // ── GEN1 / GEN2: accepts A18, 18, T-A18, P-A18, S-A18 ─────────
+  else if(activeController === 'GEN1' || activeController === 'GEN2'){
+    // direct match first (e.g. T-A18 typed exactly)
+    if(faults[raw]){ found = raw; }
+    else {
+      // normalise to base: strip T-/P-/S- prefix if present, ensure A-prefix, strip leading zeros
+      var base = raw.replace(/^[TPS]-/,'');                 // remove T-/P-/S- if typed
+      if(!isNaN(base) && base !== '') base = 'A' + parseInt(base); // bare number → A18
+      else if(base.match(/^A\d/)) base = base.replace(/^A0*(\d+)/,'A$1'); // A018 → A18
+      // now try all three prefixes
+      var prefixes = ['T-','P-','S-'];
+      var matches = [];
+      for(var p=0;p<prefixes.length;p++){
+        var try_ = prefixes[p] + base;
+        if(faults[try_]) matches.push(try_);
+      }
+      if(matches.length === 1){
+        found = matches[0];
+      } else if(matches.length > 1){
+        // multiple matches — show traction (T-) first as default
+        found = matches[0];
+      }
+    }
+  }
+
+  if(found){
+    showFault(found, document.querySelector('[data-code="' + found + '"]'));
+  } else {
+    document.getElementById('resultBox').innerHTML =
+      '<div class="not-found"><div class="not-found-code">' + raw + '</div><p>Fault code not found in ' + activeController + ' — please check the code and try again</p></div>';
+  }
 }
 
 function showFault(code, btn) {
