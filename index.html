@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Flexi Fault Finder</title>
-<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&family=Barlow+Condensed:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
   --red: #e8002d;
@@ -21,7 +21,7 @@
   --text-dim: #555;
   --mono: 'Share Tech Mono', monospace;
   --display: 'Barlow Condensed', sans-serif;
-  --ui: 'Rajdhani', sans-serif;
+  --ui: 'Barlow Condensed', sans-serif;
   --green: #00c853;
   --green-subtle: rgba(0,200,83,0.08);
   --green-dim: #007a32;
@@ -30,7 +30,7 @@
   --amber-dim: #b36a00;
 }
 *{box-sizing:border-box;margin:0;padding:0;}
-body{background:var(--bg);color:var(--text);font-family:var(--ui);min-height:100vh;overflow-x:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--ui);font-size:16px;font-weight:600;min-height:100vh;overflow-x:hidden;}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(232,0,45,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(232,0,45,0.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
 
 /* ── CONTAINER ── */
@@ -39,10 +39,12 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 /* ── HEADER ── */
 .header{text-align:center;padding:40px 0 36px;border-bottom:1px solid var(--border);margin-bottom:36px;position:relative;}
 .header::after{content:'';position:absolute;bottom:-1px;left:50%;transform:translateX(-50%);width:200px;height:1px;background:linear-gradient(90deg,transparent,var(--red),transparent);}
-.header-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--red);text-transform:uppercase;margin-bottom:10px;}
+.header-eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:0.3em;color:var(--red);text-transform:uppercase;margin-bottom:16px;}
+.header-logo{margin:0 auto 12px;width:clamp(140px,25vw,240px);}
+.header-logo svg{width:100%;height:auto;display:block;}
 .header h1{font-family:var(--display);font-size:clamp(36px,6vw,62px);font-weight:800;letter-spacing:0.04em;text-transform:uppercase;color:var(--text);line-height:1;}
 .header h1 span{color:var(--red);}
-.header-sub{margin-top:10px;font-family:var(--mono);font-size:12px;letter-spacing:0.15em;color:var(--text-muted);}
+.header-sub{margin-top:12px;font-family:var(--mono);font-size:12px;letter-spacing:0.15em;color:var(--text-muted);}
 
 /* ── ENGINEER BAR ── */
 .engineer-bar{display:flex;align-items:center;justify-content:space-between;background:var(--bg-card);border:1px solid var(--border);padding:12px 20px;margin-bottom:24px;flex-wrap:wrap;gap:12px;}
@@ -125,9 +127,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .section-label.amber-label::before{background:var(--amber);}
 .section-label.green-label{color:var(--green);}
 .section-label.green-label::before{background:var(--green);}
-.cause-text{font-size:14px;line-height:1.65;color:#bbb;font-weight:400;}
+.cause-text{font-size:15px;line-height:1.65;color:#d8d8d8;font-weight:600;}
 .steps-list{list-style:none;display:flex;flex-direction:column;gap:8px;}
-.steps-list li{display:flex;gap:12px;align-items:flex-start;font-size:14px;line-height:1.5;color:#ccc;}
+.steps-list li{display:flex;gap:12px;align-items:flex-start;font-size:15px;line-height:1.5;color:#d8d8d8;font-weight:600;}
 .step-num{font-family:var(--mono);font-size:11px;color:var(--red);background:var(--red-subtle);border:1px solid var(--red-dim);min-width:24px;height:20px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px;}
 .related-section{padding:16px 24px;border-bottom:1px solid var(--border);}
 .related-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
@@ -144,10 +146,10 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
 .part-confidence.medium{color:var(--amber);border-color:var(--amber-dim);background:var(--amber-subtle);}
 .part-confidence.low{color:var(--text-muted);border-color:var(--border-bright);}
 .part-info{flex:1;}
-.part-name{font-family:var(--display);font-size:16px;font-weight:600;letter-spacing:0.05em;color:var(--text);}
+.part-name{font-family:var(--display);font-size:17px;font-weight:700;letter-spacing:0.03em;color:var(--text);}
 .part-number{font-family:var(--mono);font-size:11px;color:var(--red);letter-spacing:0.1em;margin-top:2px;}
-.part-reason{font-size:12px;color:var(--text-muted);margin-top:2px;font-family:var(--ui);}
-.part-add-btn{background:var(--red);border:none;color:#fff;font-family:var(--display);font-size:13px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:8px 18px;cursor:pointer;transition:background 0.15s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
+.part-reason{font-size:13px;color:#aaa;margin-top:3px;font-family:var(--ui);font-weight:600;}
+.part-add-btn{background:var(--red);border:none;color:#fff;font-family:var(--display);font-size:14px;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:8px 18px;cursor:pointer;transition:background 0.15s;white-space:nowrap;display:flex;align-items:center;gap:8px;}
 .part-add-btn:hover{background:#b5001f;}
 .part-add-btn.added{background:var(--green-dim);cursor:default;}
 .part-add-btn svg{width:14px;height:14px;fill:currentColor;}
@@ -206,7 +208,9 @@ body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(
   <!-- HEADER -->
   <div class="header">
     <div class="header-eyebrow">Diagnostic Tool &nbsp;/&nbsp; Flexi Portal</div>
-    <h1>Flexi <span>Fault</span> Finder</h1>
+    <div class="header-logo">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 841.9 497.3" xml:space="preserve"><style>.st0{fill:#FFFFFF;}</style><g><path class="st0" d="M724.9,251.8l9.8-4.4c0.7-0.3,1.5-0.2,2.1,0.2l21.4,13.9c1.4,0.9,1.4,3.1-0.1,3.9l-8.5,4.9c-0.7,0.4-1.6,0.4-2.3-0.1l-22.7-14.4C723.1,254.8,723.2,252.5,724.9,251.8"></path><path class="st0" d="M465.5,354.3c-3.9-1.9-6.2-15.3,4.1-34.8c8-15.1,17.6-20.8,22.6-22.6c5.2-1.9,8.9-0.1,10,1c5.6,5.8,0.6,20-6.5,31.4C487.1,343.2,471.1,357,465.5,354.3 M806,352.8c-8.6,14.7-20.3,14-29.1,8.3c-7.7-5-13.3-26-16.2-34.6c-3.1-9-11.7-19.9-21.8-19.9c-13.1,0-30.8,36.5-35.8,42.1c-11.6,12.8-38.3,28-60.3,14.1c-12.1-7.6-28.3-29-28.3-29s49.6-49.4,51.6-52.3l-18.8-19.1c-2.3,3.8-48.6,51.6-50.4,51.6c-1.8,0-22.7-34.8-25.3-38c0,0-31.1-3-32.5-1.6c0,0,40.1,55.2,38.8,57.5c-2,3.3-45.5,34.9-56,40.5c-21.1,11.1-38.5,6.4-38.5,6.4s30.2-25.5,40.3-45.5c5-9.8,23.1-42.2-16.6-60.4c-23.6-10.8-44.4-1.6-63.6,26.8c-21.1,31-4.3,75.7-4.3,75.7s-23.6,16.7-44.6,1.3c-15.4-11.2-26.2-49.6-28.8-85.2c-3.9-52.6,6.8-158.4,6.8-158.4l-47.3-13.9c0,0,6,51.3-5.2,93.9c-26.9,102.3-97,128.4-104.6,129.3c-7.6,0.9-7.6-52.3-59.1-145C122.7,136.8,60,68.7,60.9,65.5c0.9-3.2,81.3-26.5,150.3-28.4c96.8-2.7,185.3,3,191.5,9.3c6.3,6.4-25.5,16.6,6.7,31.4c15.1,6.9,27.3-5.9,32.9-13.5c2.3-3.2,2.1-7.6-0.4-10.5C430.3,40.4,387.4,7.2,249,11.9C76.6,17.8,15.7,44.2,12.1,50.1s107.1,130.9,138,206.3c24.7,60.2,32.3,97.3,31.4,101.4c-0.9,4.1-44.4,1.4-44.4,1.4l13,21.4l35.4-1c0,0,3.9,24.3-1.8,42.7c-7.9,25.4-22.8,37.7-22.8,42.3l30.9,17.7c0,0,19.5-14.3,25.5-54.6c3-20.2,0-47.7,0-47.7s30.1-8.8,60.5-31.4c30.2-22.5,52.4-60,52.4-60s16.5,73.6,37.7,94.9c25.9,25.9,59,26.5,94,11.5c8.1,3.9,15.5,6.6,22.1,8.5c19.5,5.7,40.4,2.5,57.6-8.5c16.4-10.4,41-30.3,55.5-43.4c2.7-2.4,37.2,42.7,83.1,37.6c30.9-3.4,42.8-19,55.6-39c6.6-10.2,13.7,20.7,45.9,32.5c18.4,6.7,37.5,0.2,44.3-11C837,354,814.7,337.9,806,352.8"></path></g></svg>
+    </div>
     <div class="header-sub">Narrow Aisle Ltd &nbsp;·&nbsp; All Controllers &nbsp;·&nbsp; Integrated Parts Ordering</div>
   </div>
 
