@@ -663,10 +663,11 @@ function submitOrder() {
     comments: document.getElementById('cartComments').value || ''
   };
 
+  var formBody = new URLSearchParams();
+  formBody.append('payload', JSON.stringify(payload));
   fetch(SCRIPT_URL, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
+    body: formBody
   })
   .then(function(r){ return r.json(); })
   .then(function(data){
